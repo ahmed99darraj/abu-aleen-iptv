@@ -12,8 +12,8 @@ const muteButton = document.getElementById('muteButton');
 const volumeSlider = document.getElementById('volumeSlider');
 const fullscreenButton = document.getElementById('fullscreenButton');
 
-// API Base URL
-const API_BASE_URL = 'https://abu-aleen-iptv-backend.onrender.com';
+// API Base URL - Use relative path for production
+const API_BASE_URL = '';
 
 // Fetch channels from backend
 async function fetchChannels(playlist = 'all') {
