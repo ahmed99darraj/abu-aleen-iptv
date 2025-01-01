@@ -3,78 +3,52 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ABU-ALEEN IPTV</title>
+    <title>ABU-ALEEN IPTV Player</title>
     <link rel="stylesheet" href="styles.css">
-    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
 </head>
 <body>
     <div class="container">
-        <div class="sidebar" id="sidebar">
-            <div class="logo">ABU-ALEEN</div>
+        <div class="sidebar">
+            <h1>ABU-ALEEN IPTV</h1>
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="ابحث عن قناة...">
+            </div>
             <div class="playlist-selector">
                 <select id="playlistSelect">
-                    <optgroup label="القوائم الرئيسية">
-                        <option value="all">جميع القنوات</option>
-                        <option value="arabic">القنوات العربية</option>
-                        <option value="english">القنوات الإنجليزية</option>
-                    </optgroup>
-                    <optgroup label="الفئات">
-                        <option value="sports">الرياضة</option>
-                        <option value="movies">الأفلام</option>
-                        <option value="news">الأخبار</option>
-                        <option value="kids">الأطفال</option>
-                        <option value="music">الموسيقى</option>
-                        <option value="documentary">الوثائقية</option>
-                        <option value="entertainment">الترفيه</option>
-                        <option value="family">العائلة</option>
-                        <option value="lifestyle">نمط الحياة</option>
-                        <option value="science">العلوم</option>
-                        <option value="education">التعليم</option>
-                    </optgroup>
-                    <optgroup label="قوائم إضافية">
-                        <option value="free_all">Free-TV (الكل)</option>
-                        <option value="free_arabic">Free-TV (عربي)</option>
-                        <option value="free_sports">Free-TV (رياضة)</option>
-                        <option value="samsung_plus">Samsung TV Plus</option>
-                        <option value="pluto_tv">Pluto TV</option>
-                        <option value="rakuten_tv">Rakuten TV</option>
-                    </optgroup>
-                    <optgroup label="قنوات الدول">
-                        <option value="usa">الولايات المتحدة</option>
-                        <option value="uk">المملكة المتحدة</option>
-                        <option value="france">فرنسا</option>
-                        <option value="germany">ألمانيا</option>
-                        <option value="italy">إيطاليا</option>
-                        <option value="spain">إسبانيا</option>
-                        <option value="india">الهند</option>
-                        <option value="china">الصين</option>
-                        <option value="japan">اليابان</option>
-                        <option value="korea">كوريا</option>
-                    </optgroup>
+                    <option value="all">كل القنوات</option>
+                    <option value="arabic">القنوات العربية</option>
+                    <option value="sports">الرياضة</option>
+                    <option value="news">الأخبار</option>
+                    <option value="movies">الأفلام</option>
+                    <option value="kids">قنوات الأطفال</option>
                 </select>
             </div>
-            <div class="search-box">
-                <input type="text" id="searchInput" placeholder="بحث...">
+            <div class="channels-list" id="channelsList">
+                <!-- القنوات ستضاف هنا بواسطة JavaScript -->
             </div>
-            <div class="channels-list" id="channelsList"></div>
         </div>
-        
         <div class="main-content">
             <div class="video-container">
-                <video id="videoPlayer" controls></video>
+                <video id="videoPlayer" controls>
+                    <source src="" type="application/x-mpegURL">
+                    متصفحك لا يدعم تشغيل الفيديو.
+                </video>
             </div>
-            
-            <div class="controls">
-                <button id="prevButton">⏮</button>
-                <button id="playButton">⏵</button>
-                <button id="stopButton">⏹</button>
-                <button id="nextButton">⏭</button>
-                <button id="muteButton">🔊</button>
+            <div class="player-controls">
+                <button id="previousButton">السابق</button>
+                <button id="playButton">تشغيل</button>
+                <button id="stopButton">إيقاف</button>
+                <button id="nextButton">التالي</button>
+                <button id="muteButton">كتم الصوت</button>
                 <input type="range" id="volumeSlider" min="0" max="100" value="100">
-                <button id="fullscreenButton">⛶</button>
+                <button id="fullscreenButton">ملء الشاشة</button>
+            </div>
+            <div class="channel-info">
+                <h2 id="currentChannelName">لم يتم اختيار قناة</h2>
             </div>
         </div>
     </div>
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
     <script src="app.js"></script>
 </body>
 </html>

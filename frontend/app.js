@@ -1,158 +1,120 @@
-let channels = [];
-let currentChannelIndex = -1;
-const videoPlayer = document.getElementById('videoPlayer');
-const channelsList = document.getElementById('channelsList');
-const searchInput = document.getElementById('searchInput');
-const playlistSelect = document.getElementById('playlistSelect');
-const playButton = document.getElementById('playButton');
-const stopButton = document.getElementById('stopButton');
-const prevButton = document.getElementById('prevButton');
-const nextButton = document.getElementById('nextButton');
-const muteButton = document.getElementById('muteButton');
-const volumeSlider = document.getElementById('volumeSlider');
-const fullscreenButton = document.getElementById('fullscreenButton');
+document.addEventListener('DOMContentLoaded', () => {
+    const videoPlayer = document.getElementById('videoPlayer');
+    const playlistSelect = document.getElementById('playlistSelect');
+    const channelsList = document.getElementById('channelsList');
+    const searchInput = document.getElementById('searchInput');
+    const currentChannelName = document.getElementById('currentChannelName');
+    
+    // Player controls
+    const playButton = document.getElementById('playButton');
+    const stopButton = document.getElementById('stopButton');
+    const previousButton = document.getElementById('previousButton');
+    const nextButton = document.getElementById('nextButton');
+    const muteButton = document.getElementById('muteButton');
+    const volumeSlider = document.getElementById('volumeSlider');
+    const fullscreenButton = document.getElementById('fullscreenButton');
 
-// API Base URL - Use relative path for production
-const API_BASE_URL = '';
+    let channels = [];
+    let currentChannelIndex = -1;
+    let hls = null;
 
-// Fetch channels from backend
-async function fetchChannels(playlist = 'all') {
-    try {
-        const response = await fetch(`${API_BASE_URL}/api/channels/${playlist}`);
-        channels = await response.json();
-        displayChannels(channels);
-    } catch (error) {
-        console.error('Error fetching channels:', error);
-        // Show error message to user
-        const errorDiv = document.createElement('div');
-        errorDiv.className = 'error-message';
-        errorDiv.textContent = 'عذراً، حدث خطأ في تحميل القنوات. يرجى المحاولة مرة أخرى.';
+    // تحميل القنوات
+    async function loadChannels(playlist) {
+        try {
+            const response = await fetch(`/api/channels/${playlist}`);
+            const data = await response.json();
+            channels = data;
+            displayChannels(channels);
+        } catch (error) {
+            console.error('Error loading channels:', error);
+        }
+    }
+
+    // عرض القنوات في القائمة
+    function displayChannels(channelsToDisplay) {
         channelsList.innerHTML = '';
-        channelsList.appendChild(errorDiv);
-    }
-}
-
-// Display channels in sidebar
-function displayChannels(channelsToDisplay) {
-    channelsList.innerHTML = '';
-    channelsToDisplay.forEach((channel, index) => {
-        const channelDiv = document.createElement('div');
-        channelDiv.className = 'channel-item';
-        
-        // Add channel logo if available
-        if (channel.logo) {
-            const logo = document.createElement('img');
-            logo.src = channel.logo;
-            logo.className = 'channel-logo';
-            channelDiv.appendChild(logo);
-        }
-        
-        const name = document.createElement('span');
-        name.textContent = channel.name;
-        channelDiv.appendChild(name);
-        
-        // Add category badges
-        if (channel.categories && channel.categories.length > 0) {
-            const badges = document.createElement('div');
-            badges.className = 'category-badges';
-            channel.categories.forEach(category => {
-                const badge = document.createElement('span');
-                badge.className = 'category-badge';
-                badge.textContent = category;
-                badges.appendChild(badge);
-            });
-            channelDiv.appendChild(badges);
-        }
-        
-        channelDiv.onclick = () => playChannel(index);
-        channelsList.appendChild(channelDiv);
-    });
-}
-
-// Play selected channel
-function playChannel(index) {
-    if (index < 0 || index >= channels.length) return;
-    
-    currentChannelIndex = index;
-    const channel = channels[index];
-    
-    // Update active channel in list
-    document.querySelectorAll('.channel-item').forEach((item, i) => {
-        item.classList.toggle('active', i === index);
-    });
-    
-    // Play video
-    if (Hls.isSupported()) {
-        const hls = new Hls();
-        hls.loadSource(channel.url);
-        hls.attachMedia(videoPlayer);
-        hls.on(Hls.Events.MANIFEST_PARSED, () => {
-            videoPlayer.play();
+        channelsToDisplay.forEach((channel, index) => {
+            const channelDiv = document.createElement('div');
+            channelDiv.className = 'channel-item';
+            channelDiv.innerHTML = `
+                ${channel.logo ? `<img src="${channel.logo}" alt="${channel.name}" onerror="this.src='placeholder.png'">` : ''}
+                <span>${channel.name}</span>
+            `;
+            channelDiv.onclick = () => playChannel(index);
+            channelsList.appendChild(channelDiv);
         });
-    } else if (videoPlayer.canPlayType('application/vnd.apple.mpegurl')) {
-        videoPlayer.src = channel.url;
-        videoPlayer.play();
     }
-}
 
-// Search functionality
-searchInput.addEventListener('input', (e) => {
-    const searchTerm = e.target.value.toLowerCase();
-    const filteredChannels = channels.filter(channel => 
-        channel.name.toLowerCase().includes(searchTerm) ||
-        channel.categories.some(cat => cat.toLowerCase().includes(searchTerm))
-    );
-    displayChannels(filteredChannels);
-});
+    // تشغيل القناة
+    function playChannel(index) {
+        if (index < 0 || index >= channels.length) return;
+        
+        currentChannelIndex = index;
+        const channel = channels[index];
+        currentChannelName.textContent = channel.name;
 
-// Playlist selection
-playlistSelect.addEventListener('change', (e) => {
-    fetchChannels(e.target.value);
-});
+        if (hls) {
+            hls.destroy();
+        }
 
-// Control buttons functionality
-playButton.onclick = () => {
-    if (videoPlayer.paused) {
-        videoPlayer.play();
-        playButton.textContent = '⏸';
-    } else {
+        if (Hls.isSupported()) {
+            hls = new Hls();
+            hls.loadSource(channel.url);
+            hls.attachMedia(videoPlayer);
+            hls.on(Hls.Events.MANIFEST_PARSED, () => {
+                videoPlayer.play().catch(error => {
+                    console.error('Error playing video:', error);
+                });
+            });
+        } else if (videoPlayer.canPlayType('application/vnd.apple.mpegurl')) {
+            videoPlayer.src = channel.url;
+            videoPlayer.play().catch(error => {
+                console.error('Error playing video:', error);
+            });
+        }
+    }
+
+    // البحث في القنوات
+    searchInput.addEventListener('input', (e) => {
+        const searchTerm = e.target.value.toLowerCase();
+        const filteredChannels = channels.filter(channel => 
+            channel.name.toLowerCase().includes(searchTerm)
+        );
+        displayChannels(filteredChannels);
+    });
+
+    // أزرار التحكم
+    playButton.onclick = () => videoPlayer.paused ? videoPlayer.play() : videoPlayer.pause();
+    stopButton.onclick = () => {
         videoPlayer.pause();
-        playButton.textContent = '⏵';
-    }
-};
+        videoPlayer.currentTime = 0;
+    };
+    previousButton.onclick = () => playChannel(currentChannelIndex - 1);
+    nextButton.onclick = () => playChannel(currentChannelIndex + 1);
+    muteButton.onclick = () => {
+        videoPlayer.muted = !videoPlayer.muted;
+        muteButton.textContent = videoPlayer.muted ? 'إلغاء كتم الصوت' : 'كتم الصوت';
+    };
+    volumeSlider.oninput = (e) => {
+        videoPlayer.volume = e.target.value / 100;
+    };
+    fullscreenButton.onclick = () => {
+        if (videoPlayer.requestFullscreen) {
+            videoPlayer.requestFullscreen();
+        } else if (videoPlayer.webkitRequestFullscreen) {
+            videoPlayer.webkitRequestFullscreen();
+        }
+    };
 
-stopButton.onclick = () => {
-    videoPlayer.pause();
-    videoPlayer.currentTime = 0;
-    playButton.textContent = '⏵';
-};
+    // تحديث حالة زر التشغيل
+    videoPlayer.onplay = () => playButton.textContent = 'إيقاف مؤقت';
+    videoPlayer.onpause = () => playButton.textContent = 'تشغيل';
 
-prevButton.onclick = () => {
-    playChannel(currentChannelIndex - 1);
-};
+    // تحميل القنوات عند تغيير القائمة
+    playlistSelect.addEventListener('change', () => {
+        loadChannels(playlistSelect.value);
+    });
 
-nextButton.onclick = () => {
-    playChannel(currentChannelIndex + 1);
-};
-
-muteButton.onclick = () => {
-    videoPlayer.muted = !videoPlayer.muted;
-    muteButton.textContent = videoPlayer.muted ? '🔇' : '🔊';
-};
-
-volumeSlider.onchange = (e) => {
-    videoPlayer.volume = e.target.value / 100;
-};
-
-fullscreenButton.onclick = () => {
-    if (videoPlayer.requestFullscreen) {
-        videoPlayer.requestFullscreen();
-    } else if (videoPlayer.webkitRequestFullscreen) {
-        videoPlayer.webkitRequestFullscreen();
-    } else if (videoPlayer.msRequestFullscreen) {
-        videoPlayer.msRequestFullscreen();
-    }
-};
-
-// Initialize
-fetchChannels();
+    // تحميل القنوات الافتراضية
+    loadChannels('all');
+});
