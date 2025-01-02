@@ -5,11 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ABU-ALEEN IPTV Player</title>
     <link rel="stylesheet" href="styles.css">
+    <link rel="icon" href="logo.svg" type="image/svg+xml">
 </head>
 <body>
     <div class="container">
         <div class="sidebar">
-            <h1>ABU-ALEEN IPTV</h1>
+            <h1>
+                <img src="logo.svg" alt="ABU-ALEEN IPTV">
+                ABU-ALEEN IPTV
+            </h1>
             <div class="search-box">
                 <input type="text" id="searchInput" placeholder="ابحث عن قناة...">
             </div>
@@ -29,6 +33,7 @@
                     <source src="" type="application/x-mpegURL">
                     متصفحك لا يدعم تشغيل الفيديو.
                 </video>
+                <div id="errorMessage" class="error-overlay"></div>
             </div>
             <div class="player-controls">
                 <button id="previousButton">السابق</button>

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+    <!-- خلفية دائرية -->
+    <circle cx="100" cy="100" r="90" fill="#8B0000"/>
+    
+    <!-- حرف A -->
+    <path d="M70 150 L100 50 L130 150 M80 120 H120" 
+          fill="none" stroke="#FFFFFF" stroke-width="12"/>
+    
+    <!-- شاشة التلفاز -->
+    <rect x="60" y="80" width="80" height="50" 
+          fill="none" stroke="#FFFFFF" stroke-width="6" 
+          rx="8" ry="8"/>
+    
+    <!-- موجات البث -->
+    <path d="M40 70 Q60 60 80 70 M120 70 Q140 60 160 70"
+          fill="none" stroke="#FFFFFF" stroke-width="6"
+          stroke-linecap="round"/>
+</svg>
