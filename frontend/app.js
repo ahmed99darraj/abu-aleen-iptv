@@ -1,9 +1,10 @@
 document.addEventListener('DOMContentLoaded', () => {
     const videoPlayer = document.getElementById('videoPlayer');
-    const playlistSelect = document.getElementById('playlistSelect');
+    const groupSelect = document.getElementById('groupSelect');
     const channelsList = document.getElementById('channelsList');
     const searchInput = document.getElementById('searchInput');
     const currentChannelName = document.getElementById('currentChannelName');
+    const currentGroup = document.getElementById('currentGroup');
     
     // Player controls
     const playButton = document.getElementById('playButton');
@@ -14,20 +15,43 @@ document.addEventListener('DOMContentLoaded', () => {
     const volumeSlider = document.getElementById('volumeSlider');
     const fullscreenButton = document.getElementById('fullscreenButton');
 
-    let channels = [];
+    let allChannels = {};
+    let currentChannels = [];
     let currentChannelIndex = -1;
     let hls = null;
 
     // تحميل القنوات
-    async function loadChannels(playlist) {
+    async function loadChannels() {
         try {
-            const response = await fetch(`/api/channels/${playlist}`);
+            const response = await fetch('/api/channels');
             const data = await response.json();
-            channels = data;
-            displayChannels(channels);
+            
+            // تحديث قائمة المجموعات
+            groupSelect.innerHTML = '<option value="all">كل المجموعات</option>';
+            data.groups.forEach(group => {
+                const option = document.createElement('option');
+                option.value = group;
+                option.textContent = group;
+                groupSelect.appendChild(option);
+            });
+            
+            allChannels = data.channels;
+            displayChannelsByGroup('all');
         } catch (error) {
             console.error('Error loading channels:', error);
         }
+    }
+
+    // عرض القنوات حسب المجموعة
+    function displayChannelsByGroup(groupName) {
+        channelsList.innerHTML = '';
+        if (groupName === 'all') {
+            currentChannels = Object.values(allChannels).flat();
+        } else {
+            currentChannels = allChannels[groupName] || [];
+        }
+        
+        displayChannels(currentChannels);
     }
 
     // عرض القنوات في القائمة
@@ -47,11 +71,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // تشغيل القناة
     function playChannel(index) {
-        if (index < 0 || index >= channels.length) return;
+        if (index < 0 || index >= currentChannels.length) return;
         
         currentChannelIndex = index;
-        const channel = channels[index];
+        const channel = currentChannels[index];
         currentChannelName.textContent = channel.name;
+        currentGroup.textContent = channel.group || 'بدون مجموعة';
 
         if (hls) {
             hls.destroy();
@@ -77,10 +102,15 @@ document.addEventListener('DOMContentLoaded', () => {
     // البحث في القنوات
     searchInput.addEventListener('input', (e) => {
         const searchTerm = e.target.value.toLowerCase();
-        const filteredChannels = channels.filter(channel => 
+        const filteredChannels = currentChannels.filter(channel => 
             channel.name.toLowerCase().includes(searchTerm)
         );
         displayChannels(filteredChannels);
+    });
+
+    // تغيير المجموعة
+    groupSelect.addEventListener('change', (e) => {
+        displayChannelsByGroup(e.target.value);
     });
 
     // أزرار التحكم
@@ -110,11 +140,6 @@ document.addEventListener('DOMContentLoaded', () => {
     videoPlayer.onplay = () => playButton.textContent = 'إيقاف مؤقت';
     videoPlayer.onpause = () => playButton.textContent = 'تشغيل';
 
-    // تحميل القنوات عند تغيير القائمة
-    playlistSelect.addEventListener('change', () => {
-        loadChannels(playlistSelect.value);
-    });
-
-    // تحميل القنوات الافتراضية
-    loadChannels('all');
+    // تحميل القنوات
+    loadChannels();
 });

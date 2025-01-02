@@ -13,18 +13,14 @@
             <div class="search-box">
                 <input type="text" id="searchInput" placeholder="ابحث عن قناة...">
             </div>
-            <div class="playlist-selector">
-                <select id="playlistSelect">
-                    <option value="all">كل القنوات</option>
-                    <option value="arabic">القنوات العربية</option>
-                    <option value="sports">الرياضة</option>
-                    <option value="news">الأخبار</option>
-                    <option value="movies">الأفلام</option>
-                    <option value="kids">قنوات الأطفال</option>
+            <div class="group-selector">
+                <select id="groupSelect">
+                    <option value="all">كل المجموعات</option>
+                    <!-- سيتم إضافة المجموعات ديناميكياً -->
                 </select>
             </div>
             <div class="channels-list" id="channelsList">
-                <!-- القنوات ستضاف هنا بواسطة JavaScript -->
+                <!-- سيتم إضافة القنوات ديناميكياً -->
             </div>
         </div>
         <div class="main-content">
@@ -45,6 +41,7 @@
             </div>
             <div class="channel-info">
                 <h2 id="currentChannelName">لم يتم اختيار قناة</h2>
+                <p id="currentGroup"></p>
             </div>
         </div>
     </div>

@@ -6,14 +6,8 @@ import os
 app = Flask(__name__, static_folder='frontend', static_url_path='')
 CORS(app)
 
-# قوائم التشغيل المتاحة
-PLAYLISTS = {
-    'arabic': 'https://iptv-org.github.io/iptv/languages/ara.m3u',
-    'sports': 'https://iptv-org.github.io/iptv/categories/sports.m3u',
-    'news': 'https://iptv-org.github.io/iptv/categories/news.m3u',
-    'movies': 'https://iptv-org.github.io/iptv/categories/movies.m3u',
-    'kids': 'https://iptv-org.github.io/iptv/categories/kids.m3u'
-}
+# رابط قائمة القنوات
+PLAYLIST_URL = 'https://leotv.xyz:80/get.php?username=0855583595&password=4820244090&type=m3u_plus&output=ts'
 
 def parse_m3u(content):
     channels = []
@@ -26,19 +20,18 @@ def parse_m3u(content):
                 name = info[1]
                 metadata = info[0]
                 logo = ''
-                categories = []
+                group = ''
                 
                 if 'tvg-logo="' in metadata:
                     logo = metadata.split('tvg-logo="')[1].split('"')[0]
                 
                 if 'group-title="' in metadata:
-                    category = metadata.split('group-title="')[1].split('"')[0]
-                    categories.append(category)
+                    group = metadata.split('group-title="')[1].split('"')[0]
                 
                 current_channel = {
                     'name': name,
                     'logo': logo,
-                    'categories': categories,
+                    'group': group,
                     'url': ''
                 }
         elif line.startswith('http'):
@@ -57,19 +50,24 @@ def index():
 def serve_static(path):
     return send_from_directory('frontend', path)
 
-@app.route('/api/playlists')
-def get_playlists():
-    return jsonify(list(PLAYLISTS.keys()))
-
-@app.route('/api/channels/<playlist>')
-def get_channels(playlist):
-    if playlist not in PLAYLISTS:
-        return jsonify({'error': 'Playlist not found'}), 404
-    
+@app.route('/api/channels')
+def get_channels():
     try:
-        response = requests.get(PLAYLISTS[playlist])
+        response = requests.get(PLAYLIST_URL)
         channels = parse_m3u(response.text)
-        return jsonify(channels)
+        
+        # تنظيم القنوات حسب المجموعات
+        groups = {}
+        for channel in channels:
+            group = channel['group'] or 'أخرى'
+            if group not in groups:
+                groups[group] = []
+            groups[group].append(channel)
+        
+        return jsonify({
+            'groups': list(groups.keys()),
+            'channels': groups
+        })
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
